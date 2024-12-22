@@ -97,7 +97,12 @@ welcome.grid_columnconfigure(0,weight=1,minsize=5)
 for i in range(3):
     welcome.grid_rowconfigure(i,weight=1,minsize=5)
 start_wel=tk.Label(welcome,text="Welcome to Habit tracer lets build together")
-st_bt=tk.Button(welcome,text="Start",command=lambda: show_page(login))
+def show_which():
+    if user.authorized_status==True:
+        show_page(main)
+    else:
+        show_page(login)    
+st_bt=tk.Button(welcome,text="Start",command=lambda: show_which())
 exit_bt=tk.Button(welcome,text="Exit",command=root.destroy)
 start_wel.grid(row=0,column=0,padx=5,pady=5)
 st_bt.grid(row=1,column=0,padx=5,pady=5)
@@ -111,33 +116,57 @@ for i in range(3):
     main.grid_rowconfigure(i,weight=1,minsize=5)  
 habit_frame=tk.Frame(main)   
 habit_frame.grid(row=3,column=0,sticky="nsew") 
+add_habit=tk.Button(main,text="Add Habit",command=habit_form) 
 habit_label=tk.Label(habit_frame,text="No Habits Yet")
 habit_label.pack()
-add_habit=tk.Button(main,text="Add Habit",command=habit_form) 
+
 def refresh():
     for widgt in habit_frame.winfo_children():
-        widgt.destroy()
+        a=1
+        if len(user.habits)!=0:
+            a=2
+            widgt.destroy()
     for i,habit in  enumerate(user.habits):
-        habit_label=tk.Label(main,text=f"{habit.name}")
-        habit_label.grid(row=i+2,column=1)
+        if habit.status==False:
+            habit_label=tk.Label(habit_frame,text=f"{habit.name}")
+            habit_label.pack()
+
+    #if there are no habits to add then calling mark will not destroy window      
+    if all(habit.status for habit in user.habits) and a==2:    
+        no_hb_lbl=tk.Label(habit_frame,text="All Done!")
+        no_hb_lbl.pack()   
 done_mark=tk.Button(main,text="mark_done",command=lambda: show_page(done))  
 add_habit.grid(row=0,column=1)
 done_mark.grid(row=1,column=1)
-for i in user.habits:
-    habit_todo=tk.Label(main,text=f"{i.name}")
-    habit_todo.grid(row=i,column=0)
 
 #Mark habits done
+#refresh the list when new habit is added
 def refresh_checklist():
+    def checkbox_event(index):
+        if checkvar[index].get()==1:
+            user.habits[index].status=True
+        else:
+            user.habits[index].status=False 
+        refresh()          
     for widgt in done.winfo_children():
-        widgt.destroy()
+        widgt.destroy() 
+    checkvar=[]    
     for i,habit in  enumerate(user.habits):
-        check=tk.Checkbutton(done,text=habit.name,variable=habit.status)
+        var=tk.IntVar(value=1 if habit.status else 0)
+        checkvar.append(var)
+        check=tk.Checkbutton(done,text=habit.name,variable=var,command=lambda x=i: checkbox_event(x))
         check.grid(row=i,column=0)
+    ok=tk.Button(done,text="Done",command=lambda: show_page(main)) 
+    ok.grid(row=i+1,column=2)
+
+#no habit screen
 done=tk.Frame(container)
 done.grid(row=0,column=0,sticky="nsew")
 lbl=tk.Label(done,text="No Habits Yet")
 lbl.grid(row=0,column=0)
+
+ok=tk.Button(done,text="Done",command=lambda: show_page(main)) 
+ok.grid(row=1,column=2)
 show_page(login1)
 root.mainloop()
 

@@ -6,7 +6,7 @@ class User:
         self.__password=passwd
         self.habits=[]
         self.points=0    
-        self.authorized_status=False
+        self.authorized_status=True
     def add_habit(self,habit): #storing objects of habit class agreegation
         self.habits.append(habit)
     def  change_password(self,n_password):
@@ -27,9 +27,8 @@ class Habit:
          self.frequency=frequency
          self.description=description
          self.status=False
-    def mark_done(self,person):
+    def mark_done(self):
         self.status=True 
-        person.habits[f"{self.name}"]["status"]=True     
 
 
 
